@@ -1,0 +1,7 @@
+---
+- name: Upgrade Sonarqube
+  hosts: sonarqube
+
+  roles:
+  - sonarqube_upgrade
+

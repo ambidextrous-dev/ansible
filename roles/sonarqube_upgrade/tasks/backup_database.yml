@@ -1,0 +1,25 @@
+---
+- name: Create a backup directory
+  file:
+    path: "{{ sonar_home }}/sonarqube-{{ sonar_target_version }}/backups/"
+    mode: 0755
+    owner: "{{ sonar_user }}"
+    state: directory
+
+- name: Ensure required packages are present
+  yum: 
+    name: postgresql
+    state: latest
+    update_cache: true
+
+- name: Create database dump
+  when: sonar_db_create_backup
+  postgresql_db:
+    state: dump
+    name: "{{ sonar_db_name }}"
+    target: "{{ sonar_home }}/sonarqube-{{ sonar_target_version }}/backups/db_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}_{{ ansible_date_time.minute }}.dump.gz" 
+    login_host: "{{ sonar_db_host }}"
+    login_port: "{{ sonar_db_port }}"
+    login_user: "{{ sonar_db_user }}"
+    login_password: "{{ sonar_db_password }}"
+    encoding: "{{ sonar_db_encoding }}"

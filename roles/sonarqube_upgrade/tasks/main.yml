@@ -1,0 +1,67 @@
+---
+# tasks file for sonarqube_upgrade
+- debug: msg="Running Sonarqube upgrade to version '{{ sonar_target_version }}'"
+
+- name: Create Sonar user
+  user: name={{sonar_user}}
+
+- name: Ensure sonar_home directory is present
+  become: yes
+  file: 
+    path: "{{ sonar_home }}"
+    owner: "{{sonar_user}}"
+    group: "{{sonar_user}}"
+    state: "directory"
+    mode: "1755"
+
+- name: Download Sonarqube 
+  become: yes
+  become_user: "{{ sonar_user }}"
+  get_url: 
+    url: "https://binaries.sonarsource.com/CommercialDistribution/sonarqube-enterprise/sonarqube-enterprise-{{ sonar_target_version }}.zip"
+    dest: "{{ sonar_home }}/sonarqube-{{ sonar_target_version }}.zip"
+
+- name: Unarchive Sonarqube
+  become: yes
+  become_user: "{{ sonar_user }}"
+  unarchive: src="{{ sonar_home }}/sonarqube-{{ sonar_target_version }}.zip" dest={{ sonar_home }} copy=false
+
+- include: backup_database.yml
+
+- name: Apply sonar.properties config
+  become: yes
+  become_user: "{{ sonar_user }}"
+  template: 
+    src: templates/sonar.properties.j2
+    dest: "{{ sonar_home }}/sonarqube-{{ sonar_target_version }}/conf/sonar.properties"
+
+- name: Ensure Sonar is stopped
+  systemd: 
+    name: sonarqube 
+    state: stopped
+    daemon_reload: yes
+
+- name: Create Symlink for sonarqube directory
+  file:
+    src: "{{ sonar_home }}/sonarqube-{{ sonar_target_version }}"
+    dest: "{{ active_sonar_home }}"
+    state: link
+
+- name: Backup Service file
+  copy:
+    src: "{{ systemd_service_home }}/sonarqube.service"
+    dest: "{{ systemd_service_home }}/sonarqube.service.backup.{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}_{{ ansible_date_time.minute }}"
+    remote_src: yes
+
+- name: Update Sonarqube Systemd service file
+  become: yes
+  template: 
+    src: templates/sonarqube.service.j2
+    dest: "{{ systemd_service_home }}/sonarqube.service"
+
+- name: Ensure Sonar is started
+  systemd: 
+    name: sonarqube
+    state: started
+    enabled: yes
+    daemon_reload: yes

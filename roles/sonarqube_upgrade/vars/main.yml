@@ -1,0 +1,19 @@
+---
+# vars file for sonarqube_upgrade
+sonar_user: sonarqube
+sonar_home: /opt/sonar_versions
+active_sonar_home: /opt/sonarqube
+sonar_target_version: 9.8.0.63668
+
+#sonar db details
+sonar_db_host: dbserverhost
+sonar_db_name: dbname
+sonar_db_port: 5432
+sonar_db_user: dbusername
+sonar_db_password: dbpassword
+sonar_db_encoding: utf8
+
+sonar_db_create_backup: yes
+
+systemd_service_home: /etc/systemd/system
+

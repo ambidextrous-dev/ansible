@@ -1,0 +1,199 @@
+# Property values can:
+# - be overridden by environment variables. The name of the corresponding environment variable is the
+#   upper-cased name of the property where all the dot ('.') and dash ('-') characters are replaced by
+#   underscores ('_'). For example, to override 'sonar.web.systemPasscode' use 'SONAR_WEB_SYSTEMPASSCODE'.
+# - be encrypted. See https://redirect.sonarsource.com/doc/settings-encryption.html
+
+#--------------------------------------------------------------------------------------------------
+# DATABASE
+sonar.jdbc.username={{ sonar_db_user }}
+sonar.jdbc.password= {{ sonar_db_password }}
+sonar.jdbc.url=jdbc:postgresql://{{ sonar_db_host }}:{{ sonar_db_port }}/{{ sonar_db_name }}
+
+#----- Connection pool settings
+# The maximum number of active connections that can be allocated
+# at the same time, or negative for no limit.
+# The recommended value is 1.2 * max sizes of HTTP pools. For example if HTTP ports are
+# enabled with default sizes (50, see property sonar.web.http.maxThreads)
+# then sonar.jdbc.maxActive should be 1.2 * 50 = 60.
+#sonar.jdbc.maxActive=60
+
+# The maximum number of connections that can remain idle in the
+# pool, without extra ones being released, or negative for no limit.
+#sonar.jdbc.maxIdle=5
+
+# The minimum number of connections that can remain idle in the pool,
+# without extra ones being created, or zero to create none.
+#sonar.jdbc.minIdle=2
+
+# The maximum number of milliseconds that the pool will wait (when there
+# are no available connections) for a connection to be returned before
+# throwing an exception, or <= 0 to wait indefinitely.
+#sonar.jdbc.maxWait=5000
+
+#sonar.jdbc.minEvictableIdleTimeMillis=600000
+#sonar.jdbc.timeBetweenEvictionRunsMillis=30000
+
+#--------------------------------------------------------------------------------------------------
+# WEB SERVER
+# Web server is executed in a dedicated Java process. By default heap size is 512MB.
+# Use the following property to customize JVM options.
+#    Recommendations:
+#
+#    The HotSpot Server VM is recommended. The property -server should be added if server mode
+#    is not enabled by default on your environment:
+#    http://docs.oracle.com/javase/8/docs/technotes/guides/vm/server-class.html
+#
+#    Startup can be long if entropy source is short of entropy. Adding
+#    -Djava.security.egd=file:/dev/./urandom is an option to resolve the problem.
+#    See https://wiki.apache.org/tomcat/HowTo/FasterStartUp#Entropy_Source
+
+{% if (sonar_web_java_opts is defined) and (sonar_web_java_opts | length > 0) %}
+sonar.web.javaOpts={{ sonar_web_java_opts }}
+{% endif %}
+{% if (sonar_web_java_additional_opts is defined) and (sonar_web_java_additional_opts | length > 0) %}
+sonar.web.javaAdditionalOpts={{ sonar_web_java_additional_opts | default('') }}
+{% endif %}
+
+sonar.web.host={{ sonar_web_host | default('0.0.0.0') }}
+{% if (sonar_web_context is defined) and (sonar_web_context | length > 0) %}
+sonar.web.context={{ sonar_web_context }}
+{% endif %}
+sonar.web.port={{ sonar_web_port | default('9000') }}
+sonar.web.http.maxThreads={{ sonar_web_http_max_threads | default('50') }}
+sonar.web.http.minThreads={{ sonar_web_http_min_threads | default('5') }}
+sonar.web.http.acceptCount={{ sonar_web_http_accept_count | default('25') }}
+
+#--------------------------------------------------------------------------------------------------
+# COMPUTE ENGINE
+# The Compute Engine is responsible for processing background tasks.
+# Compute Engine is executed in a dedicated Java process. Default heap size is 512MB.
+# Use the following property to customize JVM options.
+#    Recommendations:
+#
+#    The HotSpot Server VM is recommended. The property -server should be added if server mode
+#    is not enabled by default on your environment:
+#    http://docs.oracle.com/javase/8/docs/technotes/guides/vm/server-class.html
+#
+#sonar.ce.javaOpts=-Xmx512m -Xms128m -XX:+HeapDumpOnOutOfMemoryError
+
+# Same as previous property, but allows to not repeat all other settings like -Xmx
+#sonar.ce.javaAdditionalOpts=
+
+#--------------------------------------------------------------------------------------------------
+# ELASTICSEARCH
+# Elasticsearch is used to facilitate fast and accurate information retrieval.
+# It is executed in a dedicated Java process. Default maximum heap size is 512MB.
+# It is recommended to also set MaxDirectMemorySize (-XX:MaxDirectMemorySize) and set it to half the maximum heap size.
+#
+# --------------------------------------------------
+# Word of caution for Linux users on 64bits systems
+# --------------------------------------------------
+# Please ensure Virtual Memory on your system is correctly configured for Elasticsearch to run properly
+# (see https://www.elastic.co/guide/en/elasticsearch/reference/5.5/vm-max-map-count.html for details).
+#
+# When SonarQube runs standalone, a warning such as the following may appear in logs/es.log:
+#      "max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]"
+# When SonarQube runs as a cluster, however, Elasticsearch will refuse to start.
+#
+
+# JVM options of Elasticsearch process
+#sonar.search.javaOpts=-Xmx512m -Xms512m -XX:MaxDirectMemorySize=256m -XX:+HeapDumpOnOutOfMemoryError
+
+# Same as previous property, but allows to not repeat all other settings like -Xmx
+#sonar.search.javaAdditionalOpts=
+
+# Elasticsearch port for incoming HTTP connections. Default is 9001. Use 0 to get a free port.
+# As a security precaution, should be blocked by a firewall and not exposed to the Internet.
+#sonar.search.port=9001
+
+# Elasticsearch TCP transport port that is bound to loopback address. When nothing is set, a random port will be chosen.
+# As a security precaution, your OS configuration should not expose this port for external access.
+#sonar.es.port=
+
+# Elasticsearch host. The search server will bind this address and the search client will connect to it.
+# Default is loopback address.
+# As a security precaution, should NOT be set to a publicly available address.
+#sonar.search.host=
+
+#--------------------------------------------------------------------------------------------------
+# UPDATE CENTER
+
+# Update Center requires an internet connection to request https://update.sonarsource.org
+# It is enabled by default.
+#sonar.updatecenter.activate=true
+
+# HTTP proxy (default none)
+#http.proxyHost=
+#http.proxyPort=
+# HTTPS proxy (defaults are values of http.proxyHost and http.proxyPort)
+#https.proxyHost=
+#https.proxyPort=
+
+# NT domain name if NTLM proxy is used
+#http.auth.ntlm.domain=
+
+# SOCKS proxy (default none)
+#socksProxyHost=
+#socksProxyPort=
+
+# Proxy authentication (used for HTTP, HTTPS and SOCKS proxies)
+#http.proxyUser=
+#http.proxyPassword=
+
+# Proxy exceptions: list of hosts that can be accessed without going through the proxy
+#                   separated by the '|' character, wildcard character '*' can be used for pattern matching
+#                   used for HTTP and HTTPS (default none)
+#                   (note: localhost and its literal notations (127.0.0.1, ...) are always excluded)
+#http.nonProxyHosts=
+
+#--------------------------------------------------------------------------------------------------
+# LOGGING
+
+# Level of logs. Supported values are INFO, DEBUG and TRACE
+#sonar.log.level=INFO
+
+# Path to log files. Can be absolute or relative to installation directory.
+# Default is <installation home>/logs
+#sonar.path.logs=logs
+
+# Rolling policy of log files
+#    - based on time if value starts with "time:", for example by day ("time:yyyy-MM-dd")
+#      or by month ("time:yyyy-MM")
+#    - based on size if value starts with "size:", for example "size:10MB"
+#    - disabled if value is "none".  That needs logs to be managed by an external system like logrotate.
+#sonar.log.rollingPolicy=time:yyyy-MM-dd
+
+# Maximum number of files to keep if a rolling policy is enabled.
+#    - maximum value is 20 on size rolling policy
+#    - unlimited on time rolling policy. Set to zero to disable old file purging.
+#sonar.log.maxFiles=7
+
+# Access log is the list of all the HTTP requests received by server. If enabled, it is stored
+# in the file {sonar.path.logs}/access.log. This file follows the same rolling policy as for
+# sonar.log (see sonar.log.rollingPolicy and sonar.log.maxFiles).
+#sonar.web.accessLogs.enable=true
+
+# Format of access log. It is ignored if sonar.web.accessLogs.enable=false. Value is:
+#    - "common" is the Common Log Format (shortcut for: %h %l %u %user %date "%r" %s %b)
+#    - "combined" is another format widely recognized (shortcut for: %h %l %u [%t] "%r" %s %b "%i{Referer}" "%i{User-Agent}")
+#    - else a custom pattern. See http://logback.qos.ch/manual/layouts.html#AccessPatternLayout
+#sonar.web.accessLogs.pattern=combined
+
+#--------------------------------------------------------------------------------------------------
+# OTHERS
+
+# Delay in seconds between processing of notification queue. Default is 60 seconds.
+#sonar.notifications.delay=60
+
+# Paths to persistent data files (embedded database and search index) and temporary files.
+# Can be absolute or relative to installation directory.
+# Defaults are respectively <installation home>/data and <installation home>/temp
+#sonar.path.data=data
+#sonar.path.temp=temp
+
+# Telemetry - Share anonymous SonarQube statistics
+# By sharing anonymous SonarQube statistics, you help us understand how SonarQube is used so we can improve the product to work even better for you.
+# We don't collect source code or IP addresses. And we don't share the data with anyone else.
+# To see an example of the data shared: login as a global administrator, call the WS api/system/info and check the Statistics field.
+#sonar.telemetry.enable=true
