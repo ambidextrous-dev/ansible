@@ -50,3 +50,4 @@ ansible-playbook -v -i  "inventories/dev/hosts" site.yml -u username
      ansible-vault decrypt roles/sonarqube_upgrade/vars/main.yml
   ```
 
+Note: Detailed documentation about this role and how to run this can be found here  - https://medium.com/@sushil.dev/automated-sonarqube-upgrades-with-ansible-8ee3a21f7c11
