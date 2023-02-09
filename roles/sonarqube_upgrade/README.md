@@ -37,7 +37,7 @@ Run the ansible-playbook command to run the ansible role:
 
 ``` 
 ansible-playbook -v -i  "inventories/dev/hosts" site.yml -u username
-
+```
 
 # Notes: 
 ---------------
